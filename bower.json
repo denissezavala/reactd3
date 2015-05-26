@@ -1,0 +1,23 @@
+{
+  "name": "reactd3",
+  "version": "1.0.0",
+  "authors": [
+    "Denisse <denisse.zavala@gmail.com>"
+  ],
+  "description": "This is the reat + d3.js project",
+  "main": "src/main.jsx",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.5",
+    "react": "~0.13.3",
+    "bootstrap": "~3.3.4",
+    "lodash": "~3.9.3"
+  }
+}
