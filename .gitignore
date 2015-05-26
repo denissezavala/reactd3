@@ -31,3 +31,4 @@ bower_components
 
 # Project files
 build/.*
+book_materials/.*
