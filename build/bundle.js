@@ -41351,6 +41351,125 @@ module.exports = warning;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
 var React = require("./..\\bower_components\\react\\react.js"),
+	_ = require("./..\\bower_components\\lodash\\lodash.js");
+
+var Controls = React.createClass({displayName: "Controls",
+	updateYearFilter: function (year, reset) {
+		var filter = function (d) {
+			return d.submit_date.getFullYear() == year;
+		};
+
+		if (reset || !year) {
+			filter = function () { return true };
+		}
+
+		this.setState({yearFilter: filter});
+	},
+
+	getInitialState: function () {
+		return {yearFilter: function () { return true; }};
+	},
+
+	componentDidUpdate: function () {
+		this.props.updateDataFilter(
+			(function (filters) {
+				return function (d) { return filters.yearFilter(d); };
+			})(this.state)
+		);
+	},
+
+	shouldComponentUpdate: function (nextProps, nextState) {
+		return !_.isEqual(this.state, nextState);
+	},
+
+	render: function () {
+		var getYears = function (data) {
+			return _.keys(_.groupBy(data, function (d) {
+				return d.submit_date.getFullYear();
+			}))
+			.map(Number);
+		};
+
+		return (
+			React.createElement("div", null, 
+				React.createElement(ControlRow, {data: this.props.data, getToggleNames: getYears, updateDataFilter: this.updateYearFilter})
+			)
+		);
+	}
+});
+
+var ControlRow = React.createClass({displayName: "ControlRow",
+	makePick: function (picked, newState) {
+		var toggleValues = this.state.toggleValues;
+
+		toggleValues = _.mapValues(toggleValues, function (value, key) {
+			return newState && key == picked;
+		});
+
+		this.props.updateDataFilter(picked, !newState);
+
+		this.setState({toggleValues: toggleValues});
+	},
+
+	getInitialState: function (){
+		var toggles = this.props.getToggleNames(this.props.data),
+			toggleValues = _.zipObject(toggles, toggles.map(function () { return false; }));
+
+		return {toggleValues: toggleValues};
+	},
+
+	render: function (){
+		return (
+			React.createElement("div", {className: "row"}, 
+				React.createElement("div", {className: "col-md-12"}, 
+					this.props.getToggleNames(this.props.data).map(function (name) {
+						var key = 'toggle-' + name,
+							label = name;
+
+						return (
+							React.createElement(Toggle, {label: label, name: name, key: key, value: this.state.toggleValues[name], onClick: this.makePick})
+						);
+					}.bind(this))
+				)
+			)
+		);
+	}
+});
+
+var Toggle = React.createClass({displayName: "Toggle",
+	getInitialState: function () {
+		return {value: false};
+	},
+
+	componentWillReceiveProps: function (newProps) {
+		this.setState({value: newProps.value});
+	},
+
+	handleClick: function (event) {
+		var newState = !this.state.values;
+		this.setState({value: newState});
+		this.props.onClick(this.props.name, newState);
+	},
+
+	render: function (){
+		var className = 'btn btn-default';
+
+		if (this.state.value) {
+			className += ' btn-primary';
+		}
+
+		return (
+			React.createElement("button", {className: className, onClick: this.handleClick}, 
+				this.props.label
+			)
+		);
+	}
+});
+
+module.exports = Controls;
+
+},{"./..\\bower_components\\lodash\\lodash.js":2,"./..\\bower_components\\react\\react.js":3}],5:[function(require,module,exports){
+var React = require("./..\\bower_components\\react\\react.js"),
 	d3 = require("./..\\bower_components\\d3\\d3.js");
 
 var Histogram = React.createClass({displayName: "Histogram",
@@ -41409,7 +41528,8 @@ var Histogram = React.createClass({displayName: "Histogram",
 			React.createElement("g", {className: "histogram", transform: translate}, 
 				React.createElement("g", {className: "bars"}, 
 					this.state.bars.map(this.makeBar)
-				)
+				), 
+				React.createElement(Axis, React.__spread({},  this.props, {data: this.state.bars}))
 			)
 		);
 	}
@@ -41448,15 +41568,71 @@ var HistogramBar = React.createClass({displayName: "HistogramBar",
 	}
 });
 
+var Axis = React.createClass({displayName: "Axis",
+	componentWillMount: function () {
+		this.yScale = d3.scale.linear();
+		this.axis = d3.svg.axis()
+					  .scale(this.yScale)
+					  .orient('left')
+					  .tickFormat(function (d) {
+					  	return '$' + this.yScale.tickFormat()(d);
+					  }.bind(this));
+
+		this.update_d3(this.props);
+	},
+
+	componentWillReceiveProps: function (newProps) {
+		this.update_d3(newProps);
+	},
+
+	update_d3: function (props) {
+		this.yScale
+			.domain([0, d3.max(props.data.map(function (d) {
+				return d.x + d.dx;
+			}))])
+			.range([0, props.height - props.topMargin - props.bottomMargin]);
+
+		this.axis
+			.ticks(props.data.length)
+			.tickValues(props.data
+							.map(function (d) { return d.x; })
+							.concat(props.data[props.data.length - 1].x + props.data[props.data.length - 1].dx));
+	},
+
+	componentDidUpdate: function () {
+		this.renderAxis();
+	},
+
+	componentDidMount: function () {
+		this.renderAxis();
+	},
+
+	renderAxis: function () {
+		var node = this.getDOMNode();
+
+		d3.select(node).call(this.axis);
+	},
+
+	render: function () {
+		var translate = 'translate(' + (this.props.axisMargin - 3) + ', 0)';
+
+		return (
+			React.createElement("g", {className: "axis", transform: translate}
+			)
+		);
+	}
+});
+
 module.exports = {
 	Histogram: Histogram
 };
 
-},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\react\\react.js":3}],5:[function(require,module,exports){
+},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\react\\react.js":3}],6:[function(require,module,exports){
 var React = require("./..\\bower_components\\react\\react.js"),
 	_ = require("./..\\bower_components\\lodash\\lodash.js"),
 	d3 = require("./..\\bower_components\\d3\\d3.js"),
-	drawers = require('./drawers.jsx');
+	drawers = require('./drawers.jsx'),
+	Controls = require('./controls.jsx');
 
 var H1BGraph = React.createClass({displayName: "H1BGraph",
 	componentWillMount: function () {
@@ -41464,7 +41640,11 @@ var H1BGraph = React.createClass({displayName: "H1BGraph",
 	},
 
 	getInitialState: function () {
-		return {rawData: []};
+		return {rawData: [], dataFilter: function () { return true; } };
+	},
+
+	updateDataFilter: function (filter) {
+		this.setState({dataFilter: filter});
 	},
 
 	loadRawData: function () {
@@ -41516,14 +41696,18 @@ var H1BGraph = React.createClass({displayName: "H1BGraph",
 		};
 
 		var fullWidth = 700;
+		var filteredData = this.state.rawData.filter(this.state.dataFilter);
 
 		return (
-			React.createElement("div", {className: "row"}, 
-				React.createElement("div", {className: "col-md-12"}, 
-					React.createElement("svg", {width: fullWidth, height: params.height}, 
-						React.createElement(drawers.Histogram, React.__spread({},  params, {data: this.state.rawData}))
+			React.createElement("div", null, 
+				React.createElement("div", {className: "row"}, 
+					React.createElement("div", {className: "col-md-12"}, 
+						React.createElement("svg", {width: fullWidth, height: params.height}, 
+							React.createElement(drawers.Histogram, React.__spread({},  params, {data: filteredData}))
+						)
 					)
-				)
+				), 
+				React.createElement(Controls, {data: this.state.rawData, updateDataFilter: this.updateDataFilter})
 			)
 		);
 	}
@@ -41534,4 +41718,4 @@ React.render(
 	document.querySelectorAll('.h1bgraph')[0]
 );
 
-},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\lodash\\lodash.js":2,"./..\\bower_components\\react\\react.js":3,"./drawers.jsx":4}]},{},[5]);
+},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\lodash\\lodash.js":2,"./..\\bower_components\\react\\react.js":3,"./controls.jsx":4,"./drawers.jsx":5}]},{},[6]);
