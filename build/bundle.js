@@ -41350,8 +41350,8 @@ module.exports = warning;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
-var React = require("./..\\bower_components\\react\\react.js"),
-	_ = require("./..\\bower_components\\lodash\\lodash.js");
+var React = require("./../bower_components/react/react.js"),
+	_ = require("./../bower_components/lodash/lodash.js");
 
 var Controls = React.createClass({displayName: "Controls",
 	updateYearFilter: function (year, reset) {
@@ -41446,7 +41446,7 @@ var Toggle = React.createClass({displayName: "Toggle",
 	},
 
 	handleClick: function (event) {
-		var newState = !this.state.values;
+		var newState = !this.state.value;
 		this.setState({value: newState});
 		this.props.onClick(this.props.name, newState);
 	},
@@ -41468,9 +41468,9 @@ var Toggle = React.createClass({displayName: "Toggle",
 
 module.exports = Controls;
 
-},{"./..\\bower_components\\lodash\\lodash.js":2,"./..\\bower_components\\react\\react.js":3}],5:[function(require,module,exports){
-var React = require("./..\\bower_components\\react\\react.js"),
-	d3 = require("./..\\bower_components\\d3\\d3.js");
+},{"./../bower_components/lodash/lodash.js":2,"./../bower_components/react/react.js":3}],5:[function(require,module,exports){
+var React = require("./../bower_components/react/react.js"),
+	d3 = require("./../bower_components/d3/d3.js");
 
 var Histogram = React.createClass({displayName: "Histogram",
 	componentWillMount: function () {
@@ -41627,10 +41627,10 @@ module.exports = {
 	Histogram: Histogram
 };
 
-},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\react\\react.js":3}],6:[function(require,module,exports){
-var React = require("./..\\bower_components\\react\\react.js"),
-	_ = require("./..\\bower_components\\lodash\\lodash.js"),
-	d3 = require("./..\\bower_components\\d3\\d3.js"),
+},{"./../bower_components/d3/d3.js":1,"./../bower_components/react/react.js":3}],6:[function(require,module,exports){
+var React = require("./../bower_components/react/react.js"),
+	_ = require("./../bower_components/lodash/lodash.js"),
+	d3 = require("./../bower_components/d3/d3.js"),
 	drawers = require('./drawers.jsx'),
 	Controls = require('./controls.jsx');
 
@@ -41718,4 +41718,4 @@ React.render(
 	document.querySelectorAll('.h1bgraph')[0]
 );
 
-},{"./..\\bower_components\\d3\\d3.js":1,"./..\\bower_components\\lodash\\lodash.js":2,"./..\\bower_components\\react\\react.js":3,"./controls.jsx":4,"./drawers.jsx":5}]},{},[6]);
+},{"./../bower_components/d3/d3.js":1,"./../bower_components/lodash/lodash.js":2,"./../bower_components/react/react.js":3,"./controls.jsx":4,"./drawers.jsx":5}]},{},[6]);

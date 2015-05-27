@@ -94,7 +94,7 @@ var Toggle = React.createClass({
 	},
 
 	handleClick: function (event) {
-		var newState = !this.state.values;
+		var newState = !this.state.value;
 		this.setState({value: newState});
 		this.props.onClick(this.props.name, newState);
 	},
